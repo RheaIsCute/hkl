@@ -1,0 +1,13 @@
+# Build directories and binaries
+build/
+dist/
+.vs/
+x64/
+Debug/
+Release/
+*.exe
+*.zip
+*.user
+*.suo
+*.userosv
+*.sln.docstates

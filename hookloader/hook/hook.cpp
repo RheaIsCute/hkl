@@ -251,17 +251,27 @@ bool SetupHook(const std::wstring& dllPath, const std::wstring& functionName, DW
 
     JitteredSleep(30, 100);
 
-    std::cout << "[+] Installing handler..." << std::endl;
-    
-    // Use stealth-resolved SetWindowsHookExW
-    if (StealthAPI::pSetWindowsHookExW) {
-        g_hookHandle = StealthAPI::pSetWindowsHookExW(WH_GETMESSAGE, addr, g_dllModule, threadId);
-    } else {
-        g_hookHandle = SetWindowsHookExW(WH_GETMESSAGE, addr, g_dllModule, threadId);
+    int maxAttempts = 3;
+    for (int attempt = 1; attempt <= maxAttempts; ++attempt) {
+        std::cout << "[+] Installing hook (Attempt " << attempt << " of " << maxAttempts << ")..." << std::endl;
+
+        if (StealthAPI::pSetWindowsHookExW) {
+            g_hookHandle = StealthAPI::pSetWindowsHookExW(WH_GETMESSAGE, addr, g_dllModule, threadId);
+        } else {
+            g_hookHandle = SetWindowsHookExW(WH_GETMESSAGE, addr, g_dllModule, threadId);
+        }
+
+        if (g_hookHandle) {
+            std::cout << "[+] Hook installed successfully!" << std::endl;
+            break;
+        } else {
+            std::cout << "[-] Hook installation failed (Attempt " << attempt << "), retrying..." << std::endl;
+            JitteredSleep(500, 1500);
+        }
     }
-    
+
     if (!g_hookHandle) {
-        std::cout << "[-] Handler installation failed" << std::endl;
+        std::cout << "[-] Hook installation failed after " << maxAttempts << " attempts" << std::endl;
         if (StealthAPI::pFreeLibrary) {
             StealthAPI::pFreeLibrary(g_dllModule);
         } else {

